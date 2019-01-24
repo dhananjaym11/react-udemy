@@ -4,6 +4,8 @@ import Header from './Header/Header';
 import Persons from './Persons/Persons';
 import './App.css';
 
+export const AuthContext = React.createContext(false);
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -15,12 +17,22 @@ class App extends Component {
         { id: 2, name: 'b', age: 20 },
         { id: 3, name: 'c', age: 30 },
       ],
-      showPersons: false
+      showPersons: false,
+      isAuthenticated: false
     }
   }
 
   componentWillMount() {
     console.log('[App.js] componentWillMount');
+  }
+
+  static getDerivedStateFromProps(nextPros, prevState) {
+    console.log('[App.js] getDerivedStateFromProps', nextPros, prevState);
+    return prevState;
+  }
+
+  getSnapshotBeforeUpdate() {
+    console.log('[App.js] getSnapshotBeforeUpdate');
   }
 
   componentDidMount() {
@@ -30,7 +42,8 @@ class App extends Component {
   shouldComponentUpdate(nextPros, nextState) {
     console.log('[App.js] shouldComponentUpdate', nextPros, nextState);
     return nextState.showPersons !== this.state.showPersons ||
-      nextState.persons !== this.state.persons;
+      nextState.persons !== this.state.persons ||
+      nextState.isAuthenticated !== this.state.isAuthenticated;
   }
 
   componentWillUpdate(nextPros, nextState) {
@@ -42,8 +55,16 @@ class App extends Component {
   }
 
   toggleHandler = () => {
+    this.setState((prevState) => {
+      return {
+        showPersons: !prevState.showPersons
+      }
+    })
+  }
+
+  loginHandler = () => {
     this.setState({
-      showPersons: !this.state.showPersons
+      isAuthenticated: true
     })
   }
 
@@ -84,9 +105,11 @@ class App extends Component {
         <button onClick={() => this.setState({ showPersons: true })}>Show Persons</button>
         <Header
           title={this.props.title}
+          onLogin={this.loginHandler}
           onChange={this.toggleHandler} />
-
-        {persons}
+        <AuthContext.Provider value={this.state.isAuthenticated}>
+          {persons}
+        </AuthContext.Provider>
       </div>
     );
   }
